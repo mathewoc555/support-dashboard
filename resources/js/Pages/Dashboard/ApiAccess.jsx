@@ -4,13 +4,120 @@ import { router, useForm } from '@inertiajs/react';
 import { Check, Clipboard, Code2, KeyRound, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-const examples = [
-    ['Create issue', 'POST', '/issues', '202 Accepted'],
-    ['List issues', 'GET', '/issues?status=open&priority=high&category=Billing', '200 OK'],
-    ['View issue + comments', 'GET', '/issues/{id}', '200 OK'],
-    ['Update issue', 'PATCH', '/issues/{id}', '200 OK'],
-    ['Delete issue', 'DELETE', '/issues/{id}', '204 No Content'],
-    ['Add comment', 'POST', '/issues/{id}/comments', '201 Created'],
+const endpointExamples = (baseUrl, token) => [
+    {
+        action: 'Create issue', method: 'POST', path: '/issues', status: '202 Accepted',
+        curl: `curl -X POST "${baseUrl}/issues" \\
+  -H "Accept: application/json" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${token}" \\
+  -d '{
+    "customer_name": "Acme Ltd",
+    "title": "Customer cannot access invoices",
+    "description": "The billing page returns an authorization error.",
+    "priority": "high",
+    "category": "Billing"
+  }'`,
+        response: `HTTP/1.1 202 Accepted
+
+{
+  "data": {
+    "id": 42,
+    "customer_name": "Acme Ltd",
+    "title": "Customer cannot access invoices",
+    "description": "The billing page returns an authorization error.",
+    "priority": "high",
+    "category": "Billing",
+    "status": "open",
+    "summary": null,
+    "suggested_next_action": null,
+    "summary_status": "pending",
+    "needs_attention": true,
+    "created_at": "2026-11-15T13:33:37.000000Z",
+    "updated_at": "2026-11-15T13:33:37.000000Z"
+  }
+}`,
+    },
+    {
+        action: 'List issues', method: 'GET', path: '/issues?status=open&priority=high&category=Billing', status: '200 OK',
+        curl: `curl "${baseUrl}/issues?status=open&priority=high&category=Billing" \\
+  -H "Accept: application/json" \\
+  -H "Authorization: Bearer ${token}"`,
+        response: `HTTP/1.1 200 OK
+
+{
+  "data": [{ "id": 42, "title": "Customer cannot access invoices", "status": "open" }],
+  "links": { "first": "...", "last": "...", "prev": null, "next": null },
+  "meta": { "current_page": 1, "per_page": 20, "total": 1 }
+}`,
+    },
+    {
+        action: 'View issue and comments', method: 'GET', path: '/issues/{id}', status: '200 OK',
+        curl: `curl "${baseUrl}/issues/42" \\
+  -H "Accept: application/json" \\
+  -H "Authorization: Bearer ${token}"`,
+        response: `HTTP/1.1 200 OK
+
+{
+  "data": {
+    "id": 42,
+    "title": "Customer cannot access invoices",
+    "status": "open",
+    "comments": [{
+      "id": 7,
+      "issue_id": 42,
+      "author_name": "Support Agent",
+      "body": "We are investigating the authorization error."
+    }]
+  }
+}`,
+    },
+    {
+        action: 'Update issue', method: 'PATCH', path: '/issues/{id}', status: '200 OK',
+        curl: `curl -X PATCH "${baseUrl}/issues/42" \\
+  -H "Accept: application/json" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${token}" \\
+  -d '{ "status": "in_progress", "priority": "medium" }'`,
+        response: `HTTP/1.1 200 OK
+
+{
+  "data": {
+    "id": 42,
+    "priority": "medium",
+    "status": "in_progress",
+    "needs_attention": false,
+    "comments": []
+  }
+}`,
+    },
+    {
+        action: 'Delete issue', method: 'DELETE', path: '/issues/{id}', status: '204 No Content',
+        curl: `curl -X DELETE "${baseUrl}/issues/42" \\
+  -H "Accept: application/json" \\
+  -H "Authorization: Bearer ${token}"`,
+        response: 'HTTP/1.1 204 No Content\n\n(empty response body)',
+    },
+    {
+        action: 'Add comment', method: 'POST', path: '/issues/{id}/comments', status: '201 Created',
+        curl: `curl -X POST "${baseUrl}/issues/42/comments" \\
+  -H "Accept: application/json" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${token}" \\
+  -d '{ "author_name": "Support Agent", "body": "We are investigating the authorization error." }'`,
+        response: `HTTP/1.1 201 Created
+
+{
+  "data": {
+    "id": 7,
+    "issue_id": 42,
+    "author_name": "Support Agent",
+    "body": "We are investigating the authorization error.",
+    "created_at": "2026-11-15T13:40:00.000000Z",
+    "updated_at": "2026-11-15T13:40:00.000000Z"
+  }
+}`,
+    },
 ];
 
 function CodeBlock({ children }) {
@@ -33,17 +140,7 @@ function CodeBlock({ children }) {
 export default function ApiAccess({ tokens, newToken, baseUrl }) {
     const form = useForm({ name: '' });
     const token = newToken || 'YOUR_ACCESS_TOKEN';
-    const curl = `curl -X POST "${baseUrl}/issues" \\
-  -H "Accept: application/json" \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${token}" \\
-  -d '{
-    "customer_name": "Acme Ltd",
-    "title": "Customer cannot access invoices",
-    "description": "The billing page returns an authorization error.",
-    "priority": "high",
-    "category": "Billing"
-  }'`;
+    const examples = endpointExamples(baseUrl, token);
 
     const create = (event) => {
         event.preventDefault();
@@ -68,26 +165,25 @@ export default function ApiAccess({ tokens, newToken, baseUrl }) {
                         <h2 className="text-lg font-semibold text-white">Quick start</h2>
                         <p className="mt-1 text-sm text-slate-400">Use a bearer token, or call the same endpoints from an authenticated browser session.</p>
                         <p className="mt-3 text-xs leading-5 text-slate-500">Categories: Account &amp; Access Management, Billing, Technical Issues, Service Requests, and Feature Requests &amp; Feedback.</p>
-                        <div className="mt-5"><CodeBlock>{curl}</CodeBlock></div>
+                        <div className="mt-5"><CodeBlock>{examples[0].curl}</CodeBlock></div>
                     </Card>
 
-                    <Card className="overflow-hidden">
-                        <div className="border-b border-white/10 px-6 py-5"><h2 className="font-semibold text-white">Endpoints</h2></div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full text-sm">
-                                <tbody className="divide-y divide-white/10">
-                                    {examples.map(([action, method, path, response]) => (
-                                        <tr key={`${method}-${path}`} className="hover:bg-white/[0.025]">
-                                            <td className="px-6 py-4 text-slate-300">{action}</td>
-                                            <td className="px-3 py-4"><span className="rounded-md bg-[#cda749]/10 px-2 py-1 text-xs font-bold text-[#e8cd78]">{method}</span></td>
-                                            <td className="whitespace-nowrap px-3 py-4 font-mono text-xs text-slate-300">{path}</td>
-                                            <td className="whitespace-nowrap px-6 py-4 text-xs text-slate-400">{response}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </Card>
+                    <div className="space-y-6">
+                        {examples.map((example) => (
+                            <Card key={`${example.method}-${example.path}`} className="p-6">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className="rounded-md bg-[#cda749]/10 px-2 py-1 text-xs font-bold text-[#e8cd78]">{example.method}</span>
+                                    <h2 className="font-semibold text-white">{example.action}</h2>
+                                    <code className="text-xs text-slate-400">{example.path}</code>
+                                    <span className="ml-auto text-xs text-slate-500">{example.status}</span>
+                                </div>
+                                <div className="mt-5 grid gap-5 2xl:grid-cols-2">
+                                    <div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">cURL request</p><CodeBlock>{example.curl}</CodeBlock></div>
+                                    <div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Example response</p><CodeBlock>{example.response}</CodeBlock></div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
 
                     <Card className="p-6">
                         <h2 className="text-lg font-semibold text-white">Responses</h2>
