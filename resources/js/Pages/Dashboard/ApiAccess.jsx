@@ -177,7 +177,7 @@ export default function ApiAccess({ tokens, newToken, baseUrl }) {
                                     <code className="text-xs text-slate-400">{example.path}</code>
                                     <span className="ml-auto text-xs text-slate-500">{example.status}</span>
                                 </div>
-                                <div className="mt-5 grid gap-5 2xl:grid-cols-2">
+                                <div className="mt-5 grid gap-5">
                                     <div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">cURL request</p><CodeBlock>{example.curl}</CodeBlock></div>
                                     <div><p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Example response</p><CodeBlock>{example.response}</CodeBlock></div>
                                 </div>
