@@ -132,6 +132,7 @@ php artisan test
 - Generated work was reviewed for validation, authentication, relationships, queue behavior, cleanup, error handling, and test coverage.
 - The initial generic summary logic was changed to use seeded enterprise-hardware knowledge, structured OpenAI output, and a deterministic fallback.
 
-## Future development
+## Suggested Improvements
 
 - Add Laravel Reverb/WebSockets or Pusher so completed summaries and suggested next actions appear in the dashboard immediately without refreshing the page.
+- Add comments.user_id - nullable foreign key to users and issues.assigned_to - nullable foreign key identifying the responsible support agent, and the table issue_assignment_history for a reliable audit trail.
