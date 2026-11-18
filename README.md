@@ -1,13 +1,45 @@
 # Support Dashboard
 
-Laravel, React, and Inertia support-ticket dashboard with a token-authenticated API, comments, queued summaries, and a seeded enterprise-hardware knowledge base.
+A full-stack customer-support workspace built with Laravel, React, and Inertia. It combines issue management, team comments, token-authenticated APIs, and queued AI assistance grounded in a curated enterprise-hardware knowledge base.
+
+[![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=0B1220)](https://react.dev/)
+[![Inertia.js](https://img.shields.io/badge/Inertia.js-2-9553E9)](https://inertiajs.com/)
+[![Pest](https://img.shields.io/badge/Tested_with-Pest-8A2BE2)](https://pestphp.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+## What it demonstrates
+
+- A practical support workflow for creating, filtering, reviewing, updating, and resolving customer issues.
+- Authenticated browser sessions and Laravel Sanctum personal-access tokens for API clients.
+- Team comments tied to the authenticated support agent rather than trusting a submitted author name.
+- Queued AI summaries and suggested next actions grounded only in the supplied knowledge base.
+- A deterministic local fallback, so the workflow remains usable without an OpenAI API key.
+- Automatic attention flags for high-priority issues and clear summary-processing states.
+- Idempotent seeders with realistic sample issues, comments, users, and hardware-support knowledge.
+- Feature tests covering validation, filters, relationships, queued jobs, query counts, and bearer-token authentication.
+
+## Technology
+
+| Area | Tools |
+| --- | --- |
+| Backend | PHP 8.2+, Laravel 12, Eloquent, queues |
+| Frontend | React 18, Inertia.js 2, Tailwind CSS, Vite |
+| Authentication | Laravel Breeze and Sanctum |
+| AI workflow | OpenAI Responses API with structured output and a local fallback |
+| Data | SQLite for zero-service local setup; MySQL-compatible schema |
+| Testing | Pest and Laravel feature tests |
+
+## How the AI workflow stays reliable
+
+The summary job first classifies an issue and retrieves matching articles from the seeded knowledge base. The model is instructed to use only that supplied context and return a concise summary plus one concrete next action. If the API is unavailable or no key is configured, the same job produces a deterministic knowledge-based response instead of leaving the issue incomplete.
 
 ## Setup and run
 
 Requirements: PHP 8.2+, Composer, Node.js/npm, and the PHP SQLite extension. SQLite is the default because its zero-service setup makes local assessment reproducible; the schema also supports MySQL deployments.
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/mathewoc555/support-dashboard.git
 cd support-dashboard
 composer install
 cp .env.example .env
@@ -69,7 +101,7 @@ Run the summary queue worker manually when needed:
 php artisan queue:work
 ```
 
-If you're too lazy to configure Supervisor, `worker.php` safely runs from the command line, processes all waiting jobs, and exits when the queue is empty. Add this cron entry to run it every minute:
+For deployments where a persistent Supervisor-managed worker is unavailable, `worker.php` provides a cron-friendly alternative. It safely processes the waiting jobs and exits when the queue is empty. Add this cron entry to run it every minute:
 
 ```cron
 * * * * * cd /var/www/support-dashboard && /usr/bin/php worker.php >> storage/logs/worker-cron.log 2>&1
@@ -132,7 +164,7 @@ php artisan test
 - Generated work was reviewed for validation, authentication, relationships, queue behavior, cleanup, error handling, and test coverage.
 - The initial generic summary logic was changed to use seeded enterprise-hardware knowledge, structured OpenAI output, and a deterministic fallback.
 
-## Suggested Improvements
+## Roadmap
 
 - Add Laravel Reverb/WebSockets or Pusher so completed summaries and suggested next actions appear in the dashboard immediately without refreshing the page.
-- Add comments.user_id - nullable foreign key to users and issues.assigned_to - nullable foreign key identifying the responsible support agent, and the table issue_assignment_history for a reliable audit trail.
+- Add issue assignment and assignment-history tables for ownership, handoffs, and a reliable audit trail.
