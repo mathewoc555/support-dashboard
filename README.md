@@ -34,6 +34,10 @@ A full-stack customer-support workspace built with Laravel, React, and Inertia. 
 
 The summary job first classifies an issue and retrieves matching articles from the seeded knowledge base. The model is instructed to use only that supplied context and return a concise summary plus one concrete next action. If the API is unavailable or no key is configured, the same job produces a deterministic knowledge-based response instead of leaving the issue incomplete.
 
+![Support ticket summary and next-action workflow](docs/images/support-ticket-ai-workflow.png)
+
+The classification step uses the submitted category and knowledge-base keyword matching. The selected category determines which knowledge-base articles are included in the AI payload; the summary and suggested next action are then returned together in one structured response.
+
 ## Setup and run
 
 Requirements: PHP 8.2+, Composer, Node.js/npm, and the PHP SQLite extension. SQLite is the default because its zero-service setup makes local assessment reproducible; the schema also supports MySQL deployments.
