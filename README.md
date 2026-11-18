@@ -36,7 +36,7 @@ The summary job first classifies an issue and retrieves matching articles from t
 
 ![Support ticket summary and next-action workflow](docs/images/support-ticket-ai-workflow.png)
 
-The classification step uses the submitted category and knowledge-base keyword matching. The selected category determines which knowledge-base articles are included in the AI payload; the summary and suggested next action are then returned together in one structured response.
+The classification step uses the submitted category and knowledge-base keyword matching. The knowledge base contains collections of instructions that describe how each type of issue should be investigated, handled, and resolved. The selected category determines which of these knowledge-base articles are included in the AI payload; the summary and suggested next action are then returned together in one structured response.
 
 ## Setup and run
 
